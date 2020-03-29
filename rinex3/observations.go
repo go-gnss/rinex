@@ -1,37 +1,49 @@
 package rinex3
 
-// HeaderLines can appear anywhere in the file according to spec
-// However, (though the spec is not specific on this) only the
-// Header has an END OF HEADER line
+import (
+	"bufio"
+	"fmt"
+	"github.com/alexflint/go-restructure"
+)
 
-type ObservationDataRecord struct {
-	ObservationEpochRecord `@@`
-	HeaderLine string `| @@`
-}
+// Multiple epoch observation data records with identical time tags are not allowed (exception: Event records).
+// Epochs MUST appear ordered in time.
 
 type ObservationEpochRecord struct {
-    Epoch Epoch `">" @@`
-    ObservationRecords []ObservationRecord `@@*`
+    Epoch Epoch
+    ObservationRecords []ObservationRecord
 }
 
 type Epoch struct {
-    Year int `@Int`
-    Month int `@Int`
-    Day int `@Int`
-    Hour int `@Int`
-    Minute int `@Int` // These are padded with a 0 which scanner.Int interprets to mean the value is octal, making it fail for 08 and 09
-    Second float64 `@Float`
-    EpochFlag int `@Int`
-    NumSatellites int `@Int`
-    ClockOffset float64 `@("-"? Float)?`
+	_ struct{} `^> `
+    Year int `\d{4} `
+    Month int `\d{2} `
+    Day int `\d{2} `
+    Hour int `\d{2} `
+    Minute int `\d{2} `
+    Second float64 `.{11}  `
+    EpochFlag bool `[01] `
+	NumSatellites int `...`
+    ClockOffset float64 ` {6}?.{15}?$`
 }
 
 type ObservationRecord struct {
-    SatelliteInt string `@Ident`
-    Observations []Observation `@@*`
+    SatelliteNumber string `^[a-zA-z][ 0-9][0-9]`
+    Observations []Observation
+	_ struct{} `$`
 }
 
 type Observation struct {
-    Value float64 `@("-"? Float)`
-    LliSignalStrength int `@Int?` // There won't be space between Value, LLI, and Signal Strength if all three are present
+    Value float64 `.{14}`
+    LLI bool `[01 ]`
+	SignalStrength bool `[01]`
+}
+
+func NextObservationEpochRecord(reader *bufio.Reader) (obs ObservationEpochRecord, err error) {
+	line, err := reader.ReadString('\n')
+	fmt.Println(line, err)
+	fmt.Println(restructure.Find(&obs, line))
+	line, err = reader.ReadString('\n')
+	fmt.Println(line, err)
+	return obs, err
 }

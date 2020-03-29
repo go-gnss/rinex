@@ -1,6 +1,7 @@
 package rinex3_test
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"testing"
@@ -14,5 +15,9 @@ func TestParseFile(t *testing.T) {
 		t.Error("Failed to open test data file")
 	}
 
-	fmt.Println(rinex3.Parse(file))
+	header, err := rinex3.ParseHeaderRecords(bufio.NewReader(file))
+	fmt.Printf("%+v\n", header.ObservationTypes)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
 }
