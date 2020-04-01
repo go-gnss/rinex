@@ -16,7 +16,7 @@ func TestParseFile(t *testing.T) {
 	}
 
 	header, err := rinex3.ParseHeaderRecords(bufio.NewReader(file))
-	fmt.Printf("%+v\n", header.ObservationTypes)
+	fmt.Printf("%+v\n", header)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

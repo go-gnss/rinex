@@ -20,19 +20,15 @@ import (
 
 type HeaderRecord struct {
 	Value string
-	Key string
-	Line int
+	Key   string
+	Line  int
 }
 
 type HeaderRecordParser func(*bufio.Reader, *Header, HeaderRecord) error
 
-func Foo(h *Header, hr HeaderRecord) error {
-	return nil
-}
-
 // TODO: Check for empty strings / missing required values?
 var (
-	HeaderRecordParsers map[string]HeaderRecordParser = map[string]HeaderRecordParser {
+	HeaderRecordParsers map[string]HeaderRecordParser = map[string]HeaderRecordParser{
 		"RINEX VERSION / TYPE": func(_ *bufio.Reader, h *Header, hr HeaderRecord) (err error) {
 			h.FormatVersion, err = strconv.ParseFloat(strings.TrimSpace(hr.Value[:9]), 64)
 			h.FileType = string(hr.Value[20])
@@ -50,13 +46,16 @@ var (
 			return nil
 		},
 		"MARKER NAME": func(_ *bufio.Reader, h *Header, hr HeaderRecord) error {
-			h.Marker.Name = strings.TrimSpace(hr.Value); return nil
+			h.Marker.Name = strings.TrimSpace(hr.Value)
+			return nil
 		},
 		"MARKER NUMBER": func(_ *bufio.Reader, h *Header, hr HeaderRecord) error {
-			h.Marker.Number = strings.TrimSpace(hr.Value[:20]); return nil
+			h.Marker.Number = strings.TrimSpace(hr.Value[:20])
+			return nil
 		},
 		"MARKER TYPE": func(_ *bufio.Reader, h *Header, hr HeaderRecord) error {
-			h.Marker.Type = strings.TrimSpace(hr.Value[:20]); return nil
+			h.Marker.Type = strings.TrimSpace(hr.Value[:20])
+			return nil
 		},
 		"OBSERVER / AGENCY": func(_ *bufio.Reader, h *Header, hr HeaderRecord) error {
 			h.Observer = strings.TrimSpace(hr.Value[:20])
@@ -141,7 +140,7 @@ func ParseHeaderRecords(reader *bufio.Reader) (header Header, err error) {
 			return header, NewInvalidHeaderRecordError(line, currentLine)
 		}
 
-		hr := HeaderRecord{line[:60], line[60:], currentLine,}
+		hr := HeaderRecord{line[:60], line[60:], currentLine}
 		header.records = append(header.records, hr)
 
 		if parser, ok := HeaderRecordParsers[hr.Key]; ok {
