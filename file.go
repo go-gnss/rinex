@@ -2,14 +2,25 @@ package rinex
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"io"
+
+	"github.com/go-gnss/rinex/header"
+	"github.com/go-gnss/rinex/scanner"
+	"github.com/go-gnss/rinex/rinex3"
 )
 
 // TODO: Implement differentiation between RINEX 2 and 3
 // TODO: Implement RinexFileName
 
+type RinexHeader interface {
+	GetFormatVersion() float64
+	GetFileType() string // TODO: FileType type
+}
+
 type RinexFile struct {
-	scanner *Scanner
+	scanner *scanner.Scanner
 	Header  RinexHeader
 }
 
@@ -21,22 +32,36 @@ type RinexFile struct {
 //	return epoch, err
 //}
 
-type Scanner struct {
-	*bufio.Reader
-	line int
-}
-
-func (s *Scanner) ReadLine() (line string, err error) {
-	s.line += 1
-	return s.ReadString('\n')
-}
-
 func ParseRinexFile(data io.Reader) (file RinexFile, err error) {
-	scanner := &Scanner{bufio.NewReader(data), 0}
+	scanner := &scanner.Scanner{bufio.NewReader(data), 0}
 	header, _ := ParseHeader(scanner)
 	file = RinexFile{
 		scanner: scanner,
 		Header:  header,
 	}
 	return file, err
+}
+
+// TODO: Check for empty strings / missing required values?
+func ParseHeader(scanner *scanner.Scanner) (rinexHeader RinexHeader, err error) {
+	hr, err := header.ParseHeaderRecord(scanner)
+	if err != nil {
+		return rinexHeader, header.NewHeaderRecordParsingError(err, scanner.Line)
+	}
+
+	if hr.Key != "RINEX VERSION / TYPE" {
+		return rinexHeader, errors.New("first line of header must be \"RINEX VERSION / TYPE\"")
+	}
+
+	h := header.Header{}
+	header.HeaderRecordParsers[hr.Key](scanner, &h, hr)
+	switch h.FileType {
+	case "O":
+		obsHeader := rinex3.NewObservationHeader(h)
+		err = rinex3.ParseObservationHeader(scanner, &obsHeader)
+		return obsHeader, err
+	// TODO: NavigationHeader and MeteorologicalHeader
+	default:
+		return rinexHeader, errors.New(fmt.Sprintf("invalid header type \"%v\"", h.FileType))
+	}
 }

@@ -1,7 +1,10 @@
-package rinex
+package rinex3
 
 // Multiple epoch observation data records with identical time tags are not allowed (exception: Event records).
 // Epochs MUST appear ordered in time.
+import (
+	"github.com/go-gnss/rinex/scanner"
+)
 
 type EpochRecord struct {
 	Epoch              Epoch
@@ -31,7 +34,7 @@ type Observation struct {
 	SignalStrength bool
 }
 
-func ParseEpochRecord(s *Scanner) (epoch EpochRecord, err error) {
+func ParseEpochRecord(s *scanner.Scanner) (epoch EpochRecord, err error) {
 	// TODO:
 	return epoch, err
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-gnss/rinex"
+	"github.com/go-gnss/rinex/rinex3"
 )
 
 func TestParseObservationFile(t *testing.T) {
@@ -18,7 +19,7 @@ func TestParseObservationFile(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	if _, ok := rinexFile.Header.(rinex.ObservationHeader); !ok {
+	if _, ok := rinexFile.Header.(rinex3.ObservationHeader); !ok {
 		t.Errorf("couldn't cast RinexHeader interface to ObservationHeader")
 	}
 

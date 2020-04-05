@@ -1,10 +1,12 @@
-package rinex
+package rinex3
 
-// TOOD: Rinex3ObservationHeader - wanted to move this and
-// ObservationHeaderRecord to rinex/rinex3, but that results
-// in an import cycle
+import (
+	"github.com/go-gnss/rinex/header"
+	"github.com/go-gnss/rinex/scanner"
+)
+
 type ObservationHeader struct {
-	Header
+	header.Header
 	// TODO: Probably don't want to define any of these structs inline
 	Marker struct {
 		Name           string
@@ -62,7 +64,7 @@ type ObservationHeader struct {
 	GLONASSCodePhaseBias map[string]float64 // TODO: map[Signal]float64
 }
 
-func NewObservationHeader(header Header) ObservationHeader {
+func NewObservationHeader(header header.Header) ObservationHeader {
 	return ObservationHeader{
 		Header:               header,
 		ObservationTypes:     map[string][]string{},
@@ -71,7 +73,7 @@ func NewObservationHeader(header Header) ObservationHeader {
 	}
 }
 
-func ParseObservationHeader(scanner *Scanner, header *ObservationHeader) (err error) {
+func ParseObservationHeader(scanner *scanner.Scanner, header *ObservationHeader) (err error) {
 	hr, err := ParseObservationHeaderRecord(scanner, header)
 	for err != nil || hr.Key != "END OF HEADER" {
 		hr, err = ParseObservationHeaderRecord(scanner, header)
