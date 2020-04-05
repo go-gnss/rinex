@@ -100,7 +100,7 @@ func NewHeader() Header {
 // TODO: Check for empty strings / missing required values?
 func ParseHeader(scanner *Scanner, header *Header) (err error) {
 	// TODO: Check if first line parsed is RINEX VERSION / TYPE
-	hr, err := ParseHeaderLine(scanner, header)
-	for ; err == nil && hr.Key != "END OF HEADER"; hr, err = ParseHeaderLine(scanner, header) {}
+	hr, err := ParseHeaderRecord(scanner, header)
+	for ; err == nil && hr.Key != "END OF HEADER"; hr, err = ParseHeaderRecord(scanner, header) {}
 	return err
 }

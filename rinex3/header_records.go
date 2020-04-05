@@ -130,7 +130,7 @@ var (
 					h.ObservationTypes[system] = append(h.ObservationTypes[system], strings.TrimSpace(obs[0]))
 				}
 				if len(h.ObservationTypes[system]) < int(totalObs) {
-					line, err := ParseHeaderRecord(s)
+					line, err := ParseHeaderLine(s)
 					if err != nil {
 						return err
 					}
@@ -231,7 +231,7 @@ func ParseTimeRecord(line string) (t Time, err error) {
 	return t, nil
 }
 
-func ParseHeaderRecord(scanner *Scanner) (hr HeaderRecord, err error) {
+func ParseHeaderLine(scanner *Scanner) (hr HeaderRecord, err error) {
 	line, err := scanner.ReadLine()
 	if err != nil {
 		return hr, err
@@ -245,8 +245,8 @@ func ParseHeaderRecord(scanner *Scanner) (hr HeaderRecord, err error) {
 	return HeaderRecord{line[:60], line[60:], scanner.line}, err
 }
 
-func ParseHeaderLine(scanner *Scanner, header *Header) (hr HeaderRecord, err error) {
-	hr, err = ParseHeaderRecord(scanner)
+func ParseHeaderRecord(scanner *Scanner, header *Header) (hr HeaderRecord, err error) {
+	hr, err = ParseHeaderLine(scanner)
 	if err != nil {
 		return hr, err
 	}
