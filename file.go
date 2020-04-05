@@ -13,10 +13,13 @@ type RinexFile struct {
 	Header  RinexHeader
 }
 
+// TODO: Header gives RinexVersion and FileType, consider implementation
+// of Rinex3ObservationFile, Rinex2NavigationFile, etc
+
 // TODO: Can scan through observations like so, or parse them into a map
-func (r RinexFile) NextEpoch() (epoch EpochRecord, err error) {
-	return epoch, err
-}
+//func (r RinexFile) NextEpoch() (epoch EpochRecord, err error) {
+//	return epoch, err
+//}
 
 type Scanner struct {
 	*bufio.Reader
