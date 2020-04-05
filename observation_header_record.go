@@ -1,4 +1,4 @@
-package rinex3
+package rinex
 
 import (
 	"errors"

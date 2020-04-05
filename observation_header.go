@@ -1,5 +1,8 @@
-package rinex3
+package rinex
 
+// TOOD: Rinex3ObservationHeader - wanted to move this and
+// ObservationHeaderRecord to rinex/rinex3, but that results
+// in an import cycle
 type ObservationHeader struct {
 	Header
 	// TODO: Probably don't want to define any of these structs inline

@@ -1,12 +1,13 @@
-package rinex3
+package rinex
 
 import (
 	"bufio"
 	"io"
 )
 
-// TODO: Consider whether RinexFile should be an interface in rinex package
-// since Headers are more or less the same between versions
+// TODO: Implement differentiation between RINEX 2 and 3
+// TODO: Implement RinexFileName
+
 type RinexFile struct {
 	scanner *Scanner
 	Header  RinexHeader

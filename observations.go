@@ -1,4 +1,4 @@
-package rinex3
+package rinex
 
 // Multiple epoch observation data records with identical time tags are not allowed (exception: Event records).
 // Epochs MUST appear ordered in time.
