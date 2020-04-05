@@ -5,11 +5,10 @@ import (
 	"io"
 )
 
-// TODO: Observation / Navigation / Meteorological RinexFile (currently only parsing Obs)
 type RinexFile struct {
 	scanner *Scanner
 	Name    string // TODO: RinexFileName
-	Header  Header
+	Header  RinexHeader
 }
 
 // TODO: Can scan through observations like so, or parse them into a map
@@ -28,10 +27,11 @@ func (s *Scanner) ReadLine() (line string, err error) {
 }
 
 func ParseRinexFile(data io.Reader) (file RinexFile, err error) {
+	scanner := &Scanner{bufio.NewReader(data), 0}
+	header, _ := ParseHeader(scanner)
 	file = RinexFile{
-		scanner: &Scanner{bufio.NewReader(data), 0},
-		Header:  NewHeader(),
+		scanner: scanner,
+		Header:  header,
 	}
-	err = ParseHeader(file.scanner, &file.Header)
 	return file, err
 }

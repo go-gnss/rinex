@@ -8,67 +8,43 @@ import (
 	"strings"
 )
 
-// Header Record Descriptors in columns 61-80 are mandatory
-
-type HeaderRecord struct {
-	Value string
-	Key   string
-	Line  int
-}
-
-type HeaderRecordParser func(*Scanner, *Header, HeaderRecord) error
+type ObservationHeaderRecordParser func(*Scanner, *ObservationHeader, HeaderRecord) error
 
 var (
 	HeaderRecordPatternError error = errors.New("header record did not match pattern")
 	// TODO: Consider moving function definitions out of the map
 	// TODO: Consider using a proper parser library again, or just regex groups w/
 	// Getters and Setters on Header
-	HeaderRecordParsers map[string]HeaderRecordParser = map[string]HeaderRecordParser{
-		"RINEX VERSION / TYPE": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
-			h.FormatVersion, err = strconv.ParseFloat(strings.TrimSpace(hr.Value[:9]), 64)
-			h.FileType = string(hr.Value[20])
-			h.SatelliteSystem = string(hr.Value[40])
-			return err
-		},
-		"PGM / RUN BY / DATE": func(_ *Scanner, h *Header, hr HeaderRecord) error {
-			h.Program = strings.TrimSpace(hr.Value[:20])
-			h.RunBy = strings.TrimSpace(hr.Value[20:40])
-			h.CreationDate = strings.TrimSpace(hr.Value[40:])
-			return nil
-		},
-		"COMMENT": func(_ *Scanner, h *Header, hr HeaderRecord) error {
-			h.Comments = append(h.Comments, HeaderComment{hr.Value[:60], hr.Line})
-			return nil
-		},
-		"MARKER NAME": func(_ *Scanner, h *Header, hr HeaderRecord) error {
+	ObservationHeaderRecordParsers map[string]ObservationHeaderRecordParser = map[string]ObservationHeaderRecordParser{
+		"MARKER NAME": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) error {
 			h.Marker.Name = strings.TrimSpace(hr.Value)
 			return nil
 		},
-		"MARKER NUMBER": func(_ *Scanner, h *Header, hr HeaderRecord) error {
+		"MARKER NUMBER": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) error {
 			h.Marker.Number = strings.TrimSpace(hr.Value[:20])
 			return nil
 		},
-		"MARKER TYPE": func(_ *Scanner, h *Header, hr HeaderRecord) error {
+		"MARKER TYPE": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) error {
 			h.Marker.Type = strings.TrimSpace(hr.Value[:20])
 			return nil
 		},
-		"OBSERVER / AGENCY": func(_ *Scanner, h *Header, hr HeaderRecord) error {
+		"OBSERVER / AGENCY": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) error {
 			h.Observer = strings.TrimSpace(hr.Value[:20])
 			h.Agency = strings.TrimSpace(hr.Value[20:])
 			return nil
 		},
-		"REC # / TYPE / VERS": func(_ *Scanner, h *Header, hr HeaderRecord) error {
+		"REC # / TYPE / VERS": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) error {
 			h.Receiver.Number = strings.TrimSpace(hr.Value[:20])
 			h.Receiver.Type = strings.TrimSpace(hr.Value[20:40])
 			h.Receiver.Version = strings.TrimSpace(hr.Value[40:])
 			return nil
 		},
-		"ANT # / TYPE": func(_ *Scanner, h *Header, hr HeaderRecord) error {
+		"ANT # / TYPE": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) error {
 			h.Antenna.Number = strings.TrimSpace(hr.Value[:20])
 			h.Antenna.Type = strings.TrimSpace(hr.Value[20:40])
 			return nil
 		},
-		"APPROX POSITION XYZ": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"APPROX POSITION XYZ": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			h.Marker.ApproxPosition.X, err = strconv.ParseFloat(strings.TrimSpace(hr.Value[:14]), 64)
 			if err != nil {
 				return err
@@ -80,7 +56,7 @@ var (
 			h.Marker.ApproxPosition.Z, err = strconv.ParseFloat(strings.TrimSpace(hr.Value[28:42]), 64)
 			return err
 		},
-		"ANTENNA: DELTA H/E/N": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"ANTENNA: DELTA H/E/N": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			h.Antenna.Height, err = strconv.ParseFloat(strings.TrimSpace(hr.Value[:14]), 64)
 			if err != nil {
 				return err
@@ -92,25 +68,25 @@ var (
 			h.Antenna.North, err = strconv.ParseFloat(strings.TrimSpace(hr.Value[28:42]), 64)
 			return err
 		},
-		"ANTENNA: DELTA X/Y/Z": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"ANTENNA: DELTA X/Y/Z": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err
 		},
-		"ANTENNA: PHASECENTER": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"ANTENNA: PHASECENTER": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"ANTENNA: B.SIGHT XYZ": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"ANTENNA: B.SIGHT XYZ": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"ANTENNA: ZERODIR AZI": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"ANTENNA: ZERODIR AZI": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"ANTENNA: ZERODIR XYZ": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"ANTENNA: ZERODIR XYZ": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"CENTER OF MASS: XYZ": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"CENTER OF MASS: XYZ": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"SYS / # / OBS TYPES": func(s *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"SYS / # / OBS TYPES": func(s *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			linePattern := regexp.MustCompile(`^([A-Z])..([ 0-9][ 0-9][0-9])|( ([A-Z0-9]{3}))`)
 			continuationLinePattern := regexp.MustCompile(`^( {6})|( ([A-Z0-9]{3}))`)
 
@@ -130,7 +106,7 @@ var (
 					h.ObservationTypes[system] = append(h.ObservationTypes[system], strings.TrimSpace(obs[0]))
 				}
 				if len(h.ObservationTypes[system]) < int(totalObs) {
-					line, err := ParseHeaderLine(s)
+					line, err := ParseHeaderRecord(s)
 					if err != nil {
 						return err
 					}
@@ -144,41 +120,41 @@ var (
 				}
 			}
 		},
-		"SIGNAL STRENGTH UNIT": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"SIGNAL STRENGTH UNIT": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			h.SignalStrength = strings.TrimSpace(hr.Value[:20])
 			return nil
 		},
-		"INTERVAL": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"INTERVAL": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			h.Interval, err = strconv.ParseFloat(strings.TrimSpace(hr.Value[:10]), 64)
 			return err
 		},
-		"TIME OF FIRST OBS": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"TIME OF FIRST OBS": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			h.TimeOfFirstObs, err = ParseTimeRecord(hr.Value)
 			return err
 		},
-		"TIME OF LAST OBS": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"TIME OF LAST OBS": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			h.TimeOfLastObs, err = ParseTimeRecord(hr.Value)
 			return err
 		},
-		"RCV CLOCK OFFS APPL": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"RCV CLOCK OFFS APPL": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"SYS / DCBS APPLIED": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"SYS / DCBS APPLIED": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"SYS / PCVS APPLIED": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"SYS / PCVS APPLIED": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"SYS / SCALE FACTOR": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"SYS / SCALE FACTOR": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"SYS / PHASE SHIFT": func(s *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"SYS / PHASE SHIFT": func(s *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err
 		},
-		"GLONASS SLOT / FRQ #": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"GLONASS SLOT / FRQ #": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"GLONASS COD/PHS/BIS": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"GLONASS COD/PHS/BIS": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			if strings.TrimSpace(hr.Value) == "" {
 				return nil // Spec states line must be defined, but can be blank
 			}
@@ -199,20 +175,27 @@ var (
 
 			return nil
 		},
-		"LEAP SECONDS": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"LEAP SECONDS": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"# OF SATELLITES": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"# OF SATELLITES": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
 		},
-		"PRN / # OF OBS": func(_ *Scanner, h *Header, hr HeaderRecord) (err error) {
+		"PRN / # OF OBS": func(_ *Scanner, h *ObservationHeader, hr HeaderRecord) (err error) {
 			return err // TODO:
-		},
-		"END OF HEADER": func(s *Scanner, h *Header, hr HeaderRecord) error {
-			return nil
 		},
 	}
 )
+
+type Time struct { // TODO: time.Time
+	Year   int64
+	Month  int64
+	Day    int64
+	Hour   int64
+	Minute int64
+	Second float64
+	System string
+}
 
 func ParseTimeRecord(line string) (t Time, err error) {
 	t.Year, err = strconv.ParseInt(strings.TrimSpace(line[:6]), 10, 64)
@@ -243,27 +226,20 @@ func ParseTimeRecord(line string) (t Time, err error) {
 	return t, nil
 }
 
-func ParseHeaderLine(scanner *Scanner) (hr HeaderRecord, err error) {
-	line, err := scanner.ReadLine()
-	if err != nil {
-		return hr, err
-	}
-
-	line = strings.TrimRight(line, " \n")
-	if len(line) < 61 || len(line) > 80 {
-		return hr, errors.New(fmt.Sprintf("invalid header line \"%s\"", line))
-	}
-
-	return HeaderRecord{line[:60], line[60:], scanner.line}, err
-}
-
-func ParseHeaderRecord(scanner *Scanner, header *Header) (hr HeaderRecord, err error) {
-	hr, err = ParseHeaderLine(scanner)
+func ParseObservationHeaderRecord(scanner *Scanner, header *ObservationHeader) (hr HeaderRecord, err error) {
+	hr, err = ParseHeaderRecord(scanner)
 	if err != nil {
 		return hr, err
 	}
 
 	if parser, ok := HeaderRecordParsers[hr.Key]; ok {
+		err = parser(scanner, &header.Header, hr)
+		if err == nil {
+			return hr, nil
+		}
+	}
+
+	if parser, ok := ObservationHeaderRecordParsers[hr.Key]; ok {
 		err = parser(scanner, header, hr)
 		if err == nil {
 			return hr, nil
@@ -273,10 +249,4 @@ func ParseHeaderRecord(scanner *Scanner, header *Header) (hr HeaderRecord, err e
 	}
 
 	return hr, NewHeaderRecordParsingError(err, scanner.line)
-}
-
-type HeaderRecordParsingError error
-
-func NewHeaderRecordParsingError(err error, lineNumber int) HeaderRecordParsingError {
-	return errors.New(fmt.Sprintf("failed to parse header record at line %d with reason: %s", lineNumber, err.Error()))
 }
