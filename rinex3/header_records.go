@@ -216,17 +216,29 @@ var (
 
 func ParseTimeRecord(line string) (t Time, err error) {
 	t.Year, err = strconv.ParseInt(strings.TrimSpace(line[:6]), 10, 64)
-	if err != nil { return t, err }
+	if err != nil {
+		return t, err
+	}
 	t.Month, err = strconv.ParseInt(strings.TrimSpace(line[6:12]), 10, 64)
-	if err != nil { return t, err }
+	if err != nil {
+		return t, err
+	}
 	t.Day, err = strconv.ParseInt(strings.TrimSpace(line[12:18]), 10, 64)
-	if err != nil { return t, err }
+	if err != nil {
+		return t, err
+	}
 	t.Hour, err = strconv.ParseInt(strings.TrimSpace(line[18:24]), 10, 64)
-	if err != nil { return t, err }
+	if err != nil {
+		return t, err
+	}
 	t.Minute, err = strconv.ParseInt(strings.TrimSpace(line[24:30]), 10, 64)
-	if err != nil { return t, err }
+	if err != nil {
+		return t, err
+	}
 	t.Second, err = strconv.ParseFloat(strings.TrimSpace(line[30:43]), 64)
-	if err != nil { return t, err }
+	if err != nil {
+		return t, err
+	}
 	t.System = strings.TrimSpace(line[48:51])
 	return t, nil
 }

@@ -30,7 +30,7 @@ func (s *Scanner) ReadLine() (line string, err error) {
 func ParseRinexFile(data io.Reader) (file RinexFile, err error) {
 	file = RinexFile{
 		scanner: &Scanner{bufio.NewReader(data), 0},
-		Header: NewHeader(),
+		Header:  NewHeader(),
 	}
 	err = ParseHeader(file.scanner, &file.Header)
 	return file, err

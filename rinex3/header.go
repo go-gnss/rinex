@@ -12,8 +12,13 @@ type HeaderComment struct {
 // 		These records may be handy for documentary purposes. However, since they may only be created after having read the whole raw data file, we define them to be optional
 // END OF HEADER record MUST be the last record in the header
 
+// TODO: Obs / Nav / Met have different headers, but all share "RINEX
+// VERSION / TYPE", "PGM / RUN BY / DATE", and "COMMENT" HeaderRecords
+// - Obs and Met also share "MARKER NAME" and "MARKER NUMBER" - could
+// implement as Interface which can be cast to specific type
 // TODO: Consider having Header just be a slice of HeaderRecord, using
-// Getters and Setters for each attribute
+// Getters and Setters for each attribute - wouldn't need separate
+// types for Obs, Nav, Met, but would need a lot of error checking
 type Header struct {
 	FormatVersion   float64
 	FileType        string
@@ -69,30 +74,30 @@ type Header struct {
 	//	Y float64
 	//	Z float64
 	//}
-	ObservationTypes map[string][]string // TODO: map[SatelliteSystem][]ObservationType
-	SignalStrength   string
-	Interval float64
-	TimeOfFirstObs Time
-	TimeOfLastObs Time
-	PhaseShifts		 map[string][]float64
+	ObservationTypes     map[string][]string // TODO: map[SatelliteSystem][]ObservationType
+	SignalStrength       string
+	Interval             float64
+	TimeOfFirstObs       Time
+	TimeOfLastObs        Time
+	PhaseShifts          map[string][]float64
 	GLONASSCodePhaseBias map[string]float64 // TODO: map[Signal]float64
-	Comments         []HeaderComment
+	Comments             []HeaderComment
 }
 
 type Time struct { // TODO: time.Time
-	System string
-	Year int64
-	Month int64
-	Day int64
-	Hour int64
+	Year   int64
+	Month  int64
+	Day    int64
+	Hour   int64
 	Minute int64
 	Second float64
+	System string
 }
 
 func NewHeader() Header {
 	return Header{
-		ObservationTypes: map[string][]string{},
-		PhaseShifts: map[string][]float64{},
+		ObservationTypes:     map[string][]string{},
+		PhaseShifts:          map[string][]float64{},
 		GLONASSCodePhaseBias: map[string]float64{},
 	}
 }
@@ -101,6 +106,7 @@ func NewHeader() Header {
 func ParseHeader(scanner *Scanner, header *Header) (err error) {
 	// TODO: Check if first line parsed is RINEX VERSION / TYPE
 	hr, err := ParseHeaderRecord(scanner, header)
-	for ; err == nil && hr.Key != "END OF HEADER"; hr, err = ParseHeaderRecord(scanner, header) {}
+	for ; err == nil && hr.Key != "END OF HEADER"; hr, err = ParseHeaderRecord(scanner, header) {
+	}
 	return err
 }
