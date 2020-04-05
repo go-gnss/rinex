@@ -5,9 +5,10 @@ import (
 	"io"
 )
 
+// TODO: Consider whether RinexFile should be an interface in rinex package
+// since Headers are more or less the same between versions
 type RinexFile struct {
 	scanner *Scanner
-	Name    string // TODO: RinexFileName
 	Header  RinexHeader
 }
 

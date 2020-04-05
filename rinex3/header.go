@@ -56,6 +56,7 @@ func ParseHeader(scanner *Scanner) (header RinexHeader, err error) {
 		obsHeader := NewObservationHeader(h)
 		err = ParseObservationHeader(scanner, &obsHeader)
 		return obsHeader, err
+	// TODO: NavigationHeader and MeteorologicalHeader
 	default:
 		return header, errors.New(fmt.Sprintf("invalid header type \"%v\"", h.FileType))
 	}
