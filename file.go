@@ -7,8 +7,8 @@ import (
 	"io"
 
 	"github.com/go-gnss/rinex/header"
-	"github.com/go-gnss/rinex/scanner"
 	"github.com/go-gnss/rinex/rinex3"
+	"github.com/go-gnss/rinex/scanner"
 )
 
 // TODO: Implement differentiation between RINEX 2 and 3
@@ -54,13 +54,18 @@ func ParseHeader(scanner *scanner.Scanner) (rinexHeader RinexHeader, err error) 
 	}
 
 	h := header.Header{}
-	header.HeaderRecordParsers[hr.Key](scanner, &h, hr)
+	err = header.HeaderRecordParsers[hr.Key](scanner, &h, hr)
+	if err != nil {
+		return rinexHeader, header.NewHeaderRecordParsingError(err, scanner.Line)
+	}
+
+	// TODO: NavigationHeader and MeteorologicalHeader
+	// TODO: RINEX 2 and 3
 	switch h.FileType {
 	case "O":
 		obsHeader := rinex3.NewObservationHeader(h)
 		err = rinex3.ParseObservationHeader(scanner, &obsHeader)
 		return obsHeader, err
-	// TODO: NavigationHeader and MeteorologicalHeader
 	default:
 		return rinexHeader, errors.New(fmt.Sprintf("invalid header type \"%v\"", h.FileType))
 	}

@@ -3,11 +3,11 @@ package rinex3
 import (
 	"errors"
 	"fmt"
+	"github.com/go-gnss/rinex/header"
+	"github.com/go-gnss/rinex/scanner"
 	"regexp"
 	"strconv"
 	"strings"
-	"github.com/go-gnss/rinex/header"
-	"github.com/go-gnss/rinex/scanner"
 )
 
 type ObservationHeaderRecordParser func(*scanner.Scanner, *ObservationHeader, header.HeaderRecord) error
