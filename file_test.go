@@ -19,6 +19,14 @@ func TestParseObservationFile(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
+	if ft := rinexFile.Header.GetFileType(); ft != "O" {
+		t.Errorf("incorrect RINEX File Type: %s", ft)
+	}
+
+	if fv := rinexFile.Header.GetFormatVersion(); fv != 3.03 {
+		t.Errorf("incorrect RINEX Format Version: %f", fv)
+	}
+
 	if _, ok := rinexFile.Header.(rinex3.ObservationHeader); !ok {
 		t.Errorf("couldn't cast RinexHeader interface to ObservationHeader")
 	}
