@@ -34,7 +34,7 @@ type RinexFile struct {
 
 func ParseRinexFile(data io.Reader) (file RinexFile, err error) {
 	scanner := &scanner.Scanner{bufio.NewReader(data), 0}
-	header, _ := ParseHeader(scanner)
+	header, err := ParseHeader(scanner)
 	file = RinexFile{
 		scanner: scanner,
 		Header:  header,
