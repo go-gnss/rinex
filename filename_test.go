@@ -10,32 +10,32 @@ import (
 // TODO: Format logs better
 
 func TestObservationLongName(t *testing.T) {
-	_, err := rinex.ParseFilename("SITE00AUS_R_20183280000_01D_30S_MO.rnx")
+	_, err := rinex.ParseRinexFilename("SITE00AUS_R_20183280000_01D_30S_MO.rnx")
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, err = rinex.ParseFilename("SITE00AUS_R_20183280000_01D_30S_MO.rnx.gz")
+	_, err = rinex.ParseRinexFilename("SITE00AUS_R_20183280000_01D_30S_MO.rnx.gz")
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func TestNavigationLongName(t *testing.T) {
-	_, err := rinex.ParseFilename("SITE00AUS_R_20183280000_01D_MN.rnx")
+	_, err := rinex.ParseRinexFilename("SITE00AUS_R_20183280000_01D_MN.rnx")
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, err = rinex.ParseFilename("SITE00AUS_R_20183280000_01D_MN.rnx.gz")
+	_, err = rinex.ParseRinexFilename("SITE00AUS_R_20183280000_01D_MN.rnx.gz")
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func TestInvalidFilename(t *testing.T) {
-	_, err := rinex.ParseFilename("SITE00AUS_R_201832800000_01D_MN.rnx.gz")
+	_, err := rinex.ParseRinexFilename("SITE00AUS_R_201832800000_01D_MN.rnx.gz")
 	if err.Error() != "invalid RINEX filename" {
-		t.Error("ParseFilename did not return invalid RINEX filename error")
+		t.Error("ParseRinexFilename did not return invalid RINEX filename error")
 	}
 }
