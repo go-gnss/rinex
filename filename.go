@@ -37,7 +37,7 @@ var (
         `\.(?P<format>((rnx)|(crx)))(\.(?P<compression>.*))?$`)
 )
 
-func NewRinexFilename(name string) (filename Filename, err error) {
+func ParseFilename(name string) (filename Filename, err error) {
 	matchGroups := LongNamePattern.FindStringSubmatch(name)
 	if len(matchGroups) == 0 {
 		return filename, errors.New("invalid RINEX filename")
