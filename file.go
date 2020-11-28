@@ -49,6 +49,9 @@ func ParseHeader(scanner *scanner.Scanner) (rinexHeader RinexHeader, err error) 
 		return rinexHeader, header.NewHeaderRecordParsingError(err, scanner.Line)
 	}
 
+	// TODO: This isn't true for CRX files, but that is not reflected in the format
+	// description - though it does mention .crx extensions are allowed in the
+	// filename
 	if hr.Key != "RINEX VERSION / TYPE" {
 		return rinexHeader, errors.New("first line of header must be \"RINEX VERSION / TYPE\"")
 	}

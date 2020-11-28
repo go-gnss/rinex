@@ -9,14 +9,14 @@ import (
 )
 
 func TestParseObservationFile(t *testing.T) {
-	file, err := os.Open("data/ALBY00AUS_R_20183280000_01D_30S_MO.rnx")
+	file, err := os.Open("fixtures/ALBY00AUS_R_20183280000_01D_30S_MO.rnx")
 	if err != nil {
-		t.Error("Failed to open test data file")
+		t.Fatal("failed to open test observation file")
 	}
 
 	rinexFile, err := rinex.ParseRinexFile(file)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	if ft := rinexFile.Header.GetFileType(); ft != "O" {
