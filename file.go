@@ -39,7 +39,19 @@ func ParseRinexFile(data io.Reader) (file RinexFile, err error) {
 		scanner: scanner,
 		Header:  header,
 	}
-	return file, err
+	if err != nil {
+		return file, err
+	}
+
+	for err == nil {
+		//var epoch rinex3.EpochRecord
+		_, err = rinex3.ParseEpochRecord(scanner, file.Header.(rinex3.ObservationHeader).ObservationTypes)
+		//fmt.Println(epoch, err)
+	}
+	if err != io.EOF {
+		return file, err
+	}
+	return file, nil
 }
 
 // TODO: Check for empty strings / missing required values?
