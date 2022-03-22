@@ -1,15 +1,33 @@
 package rinex3
 
-// Multiple epoch observation data records with identical time tags are not allowed (exception: Event records).
-// Epochs MUST appear ordered in time.
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/go-gnss/rinex/scanner"
 )
+
+type ObservationFile struct {
+	ObservationHeader
+	Epochs []EpochRecord
+}
+
+func ParseEpochRecords(r *bufio.Reader, observationTypes map[string][]string) (records []EpochRecord, err error) {
+	for {
+		record, err := ParseEpochRecord(r, observationTypes)
+		if err == io.EOF {
+			return records, nil
+		} else if err != nil {
+			return records, err
+		}
+		records = append(records, record)
+	}
+}
+
+// Multiple epoch observation data records with identical time tags are not allowed (exception: Event records).
+// Epochs MUST appear ordered in time.
 
 type EpochRecord struct {
 	Time               time.Time
@@ -31,14 +49,14 @@ type Observation struct {
 	SignalStrength int
 }
 
-func ParseEpochRecord(s *scanner.Scanner, observationTypes map[string][]string) (epoch EpochRecord, err error) {
-	line, err := s.ReadLine()
+func ParseEpochRecord(r *bufio.Reader, observationTypes map[string][]string) (epoch EpochRecord, err error) {
+	line, err := r.ReadString('\n')
 	if err != nil {
 		return epoch, err
 	}
 
 	if string(line[0]) != ">" {
-		return epoch, fmt.Errorf("invalid epoch record at line %d", s.Line)
+		return epoch, fmt.Errorf("invalid epoch record: %s", line)
 	}
 
 	t, err := time.Parse("2006 01 02 15 04", line[2:18])
@@ -79,7 +97,7 @@ func ParseEpochRecord(s *scanner.Scanner, observationTypes map[string][]string) 
 
 	// Parse each ObservationRecord within EpochRecord
 	for i := 0; i < int(numSats); i++ {
-		line, err = s.ReadLine()
+		line, err = r.ReadString('\n')
 		if err != nil {
 			return epoch, err
 		}

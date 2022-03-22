@@ -8,80 +8,50 @@ import (
 
 	"github.com/go-gnss/rinex/header"
 	"github.com/go-gnss/rinex/rinex3"
-	"github.com/go-gnss/rinex/scanner"
 )
 
-// TODO: Implement differentiation between RINEX 2 and 3
-// TODO: Implement RinexFileName
-
-type RinexHeader interface {
+type RinexFile interface {
 	GetFormatVersion() float64
-	GetFileType() string // TODO: FileType type
+	GetFileType() string
 }
-
-type RinexFile struct {
-	scanner *scanner.Scanner
-	Header  RinexHeader
-}
-
-// TODO: Header gives RinexVersion and FileType, consider implementation
-// of Rinex3ObservationFile, Rinex2NavigationFile, etc
-
-// TODO: Can scan through observations like so, or parse them into a map
-//func (r RinexFile) NextEpoch() (epoch EpochRecord, err error) {
-//	return epoch, err
-//}
 
 func ParseRinexFile(data io.Reader) (file RinexFile, err error) {
-	scanner := &scanner.Scanner{bufio.NewReader(data), 0}
-	header, err := ParseHeader(scanner)
-	file = RinexFile{
-		scanner: scanner,
-		Header:  header,
-	}
+	r := bufio.NewReader(data)
+	header, err := ParseHeader(r)
 	if err != nil {
 		return file, err
 	}
 
-	for err == nil {
-		//var epoch rinex3.EpochRecord
-		_, err = rinex3.ParseEpochRecord(scanner, file.Header.(rinex3.ObservationHeader).ObservationTypes)
-		//fmt.Println(epoch, err)
+	// TODO: RINEX 2
+	// TODO: NavigationHeader and MeteorologicalHeader
+	switch header.FileType {
+	case "O":
+		obsHeader := rinex3.NewObservationHeader(header)
+		err = rinex3.ParseObservationHeader(r, &obsHeader)
+		obsFile := rinex3.ObservationFile{ObservationHeader: obsHeader, Epochs: []rinex3.EpochRecord{}}
+		obsFile.Epochs, err = rinex3.ParseEpochRecords(r, obsFile.ObservationTypes)
+		return obsFile, err
+	default:
+		return file, fmt.Errorf("invalid or unsupported file type %q", header.GetFileType())
 	}
-	if err != io.EOF {
-		return file, err
-	}
-	return file, nil
 }
 
 // TODO: Check for empty strings / missing required values?
-func ParseHeader(scanner *scanner.Scanner) (rinexHeader RinexHeader, err error) {
-	hr, err := header.ParseHeaderRecord(scanner)
+func ParseHeader(r *bufio.Reader) (rinexHeader header.Header, err error) {
+	hr, err := header.ParseHeaderRecord(r)
 	if err != nil {
-		return rinexHeader, header.NewHeaderRecordParsingError(err, scanner.Line)
+		return rinexHeader, fmt.Errorf("error parsing header record: %e", err)
 	}
 
-	// TODO: This isn't true for CRX files, but that is not reflected in the format
-	// description - though it does mention .crx extensions are allowed in the
-	// filename
 	if hr.Key != "RINEX VERSION / TYPE" {
 		return rinexHeader, errors.New("first line of header must be \"RINEX VERSION / TYPE\"")
 	}
 
 	h := header.Header{}
-	err = header.HeaderRecordParsers[hr.Key](scanner, &h, hr)
+	err = header.HeaderRecordParsers[hr.Key](r, &h, hr)
 	if err != nil {
-		return rinexHeader, header.NewHeaderRecordParsingError(err, scanner.Line)
+		return rinexHeader, fmt.Errorf("error parsing header record: %e", err)
 	}
 
-	// TODO: NavigationHeader and MeteorologicalHeader
-	// TODO: RINEX 2 and 3
-	switch h.FileType {
-	case "O":
-		obsHeader := rinex3.NewObservationHeader(h)
-		err = rinex3.ParseObservationHeader(scanner, &obsHeader)
-		return obsHeader, err
-	default:
-		return rinexHeader, errors.New(fmt.Sprintf("invalid header type \"%v\"", h.FileType))
-	}
+	return h, nil
 }
