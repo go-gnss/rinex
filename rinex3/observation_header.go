@@ -1,8 +1,9 @@
 package rinex3
 
 import (
+	"bufio"
+
 	"github.com/go-gnss/rinex/header"
-	"github.com/go-gnss/rinex/scanner"
 )
 
 type ObservationHeader struct {
@@ -73,10 +74,10 @@ func NewObservationHeader(header header.Header) ObservationHeader {
 	}
 }
 
-func ParseObservationHeader(scanner *scanner.Scanner, header *ObservationHeader) (err error) {
-	hr, err := ParseObservationHeaderRecord(scanner, header)
+func ParseObservationHeader(r *bufio.Reader, header *ObservationHeader) (err error) {
+	hr, err := ParseObservationHeaderRecord(r, header)
 	for err != nil || hr.Key != "END OF HEADER" {
-		hr, err = ParseObservationHeaderRecord(scanner, header)
+		hr, err = ParseObservationHeaderRecord(r, header)
 	}
 	return err
 }

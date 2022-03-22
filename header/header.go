@@ -6,11 +6,6 @@ package header
 // # OF SATELLITES record (if present) should be immediately followed by the corresponding number of PRN / # OF OBS records.
 // 		These records may be handy for documentary purposes. However, since they may only be created after having read the whole raw data file, we define them to be optional
 // END OF HEADER record MUST be the last record in the header
-
-// TODO: Consider having Header just be a slice of HeaderRecord, using
-// Getters and Setters for each attribute - wouldn't need separate
-// types for Obs, Nav, Met, but would need a lot of error checking
-// TODO: AbstractHeader?
 type Header struct {
 	FormatVersion   float64
 	FileType        string
@@ -18,7 +13,7 @@ type Header struct {
 	Program         string
 	RunBy           string
 	CreationDate    string // TODO: time.Time
-	Comments        []HeaderComment
+	Comments        []string
 }
 
 func (h Header) GetFormatVersion() float64 {
@@ -27,9 +22,4 @@ func (h Header) GetFormatVersion() float64 {
 
 func (h Header) GetFileType() string {
 	return h.FileType
-}
-
-type HeaderComment struct {
-	Comment string
-	Line    int // TODO: This might not be useful for reconstructing Headers if additional lines are added
 }
